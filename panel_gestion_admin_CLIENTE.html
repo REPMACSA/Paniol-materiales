@@ -144,7 +144,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--blue);}
 </div>
 <div id="syncBar" style="background:#1E293B;padding:4px 16px;display:flex;justify-content:space-between;align-items:center;">
   <span id="syncStatus" style="font-size:.72rem;color:#94A3B8;">Iniciando...</span>
-  <button id="btnMigrar" onclick="migrateToSheets()" style="font-size:.7rem;background:#0D9488;color:#fff;border:none;border-radius:12px;padding:3px 10px;cursor:pointer;display:none;">↑ Migrar a Sheets</button>
 </div>
 
 <div class="tabs">
@@ -590,10 +589,11 @@ function tecnicoDeHerramienta(p){
 
 // Calcula el próximo correlativo de una familia+sub mirando el número MÁS ALTO ya usado,
 // no la cantidad de productos existentes (eso rompía si se borraba algo o si faltaba sync).
+function subIguales(a,b){ return String(a).padStart(3,"0")===String(b).padStart(3,"0"); }
 function siguienteCorrelativo(fam,sub){
   let max=0;
   DB.products.forEach(p=>{
-    if(p.fam===fam && p.sub===sub){
+    if(p.fam===fam && subIguales(p.sub,sub)){
       const partes=p.id.split("-");
       const n=parseInt(partes[2],10);
       if(!isNaN(n) && n>max) max=n;
@@ -604,7 +604,7 @@ function siguienteCorrelativo(fam,sub){
 function siguienteCorrelativoPersonal(fam,sub,letra){
   let max=0;
   DB.products.forEach(p=>{
-    if(p.fam===fam && p.sub===sub){
+    if(p.fam===fam && subIguales(p.sub,sub)){
       const seg=p.id.split("-")[2]||"";
       if(seg[0]===letra){
         const n=parseInt(seg.slice(1),10);
@@ -950,38 +950,6 @@ function showSyncStatus(msg, color) {
   if (!el) return;
   el.textContent = msg;
   el.style.color = color === 'green' ? '#059669' : color === 'orange' ? '#F59E0B' : '#94A3B8';
-  // Mostrar botón migrar solo cuando NO está conectado a Sheets
-  const btn = document.getElementById('btnMigrar');
-  if (btn) btn.style.display = (color !== 'green') ? 'block' : 'none';
-}
-
-// Migración desde localStorage a Sheets (primera vez)
-async function migrateToSheets() {
-  if (!SCRIPT_URL || SCRIPT_URL === "PEGAR_URL_AQUI") {
-    notify("Primero configurá la URL del script", "error");
-    return;
-  }
-  showSyncStatus('🔄 Migrando datos a Google Sheets...', '');
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'syncAll',
-        products: DB.products,
-        movements: DB.movements
-      })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      gsMode = true;
-      showSyncStatus('✅ ' + data.msg, 'green');
-      notify('✅ Datos migrados a Google Sheets', 'success');
-    } else {
-      notify('Error: ' + data.msg, 'error');
-    }
-  } catch(e) {
-    notify('Error de conexión: ' + e.message, 'error');
-  }
 }
 
 // ══ STATE ══
