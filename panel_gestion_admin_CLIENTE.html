@@ -1372,7 +1372,8 @@ async function addProd(){
   const name=document.getElementById("newName").value.trim();
   const desc=document.getElementById("newDesc").value.trim();
   const unit=document.getElementById("newUnit").value;
-  const min=parseInt(document.getElementById("newMin").value)||2;
+  const minInput=document.getElementById("newMin").value;
+  const min=minInput===""?2:parseInt(minInput);
   const sn=parseInt(document.getElementById("newStockN").value)||0;
   const crit=document.getElementById("newCrit").value;
   const est=document.getElementById("newEst").value;
@@ -1432,7 +1433,8 @@ function saveEdit(){
   p.name=document.getElementById("editName").value.trim()||p.name;
   p.desc=document.getElementById("editDesc").value.trim();
   p.unit=document.getElementById("editUnit").value;
-  p.min=parseInt(document.getElementById("editMin").value)||p.min;
+  const editMinInput=document.getElementById("editMin").value;
+  p.min=editMinInput===""?p.min:parseInt(editMinInput);
   p.crit=document.getElementById("editCrit").value;
   const est=document.getElementById("editEst").value;
   const estante=document.getElementById("editEstante").value;
